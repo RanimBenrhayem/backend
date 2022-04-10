@@ -2,6 +2,7 @@ const StatusCodes =  require ("http-status-codes");
 const userModel = require('../models/user.model')
 const userDao = require ('../dao/user.dao'); 
 const passwordService = require("../services/passwordService");
+const sendMail = require ('../services/mailService')
 
 
 class UserController {
@@ -9,7 +10,7 @@ class UserController {
     async signup (req,res){
         try {
             const {firstName,lastName,phoneNumber,email,password} = req.body; //retreiving attributes from request's body
-            console.log(req)
+           // console.log(req)
              const exist =   await userDao.findUserByEmail(email) //exist contient le resultat de la fonction finduserbyemail
              const phoneNumberexists =   await userDao.findUserByPhoneNumber(phoneNumber) //phoneNumberexists contient le resultat de la fonction finduserbyphonenumber
              //condition sur email et phonenumber
@@ -40,8 +41,7 @@ class UserController {
              //enregistrement user dans la base 
             const user = new userModel ({firstName,lastName,phoneNumber,email,password : passwordProcess.data})
             await user.save()
-       
-
+            const mail = sendMail(email)
 
           return   res.status(StatusCodes.CREATED).json("account created successfully")
         } catch (error) {
@@ -73,6 +73,7 @@ class UserController {
                if (!decryptedPaswword.data ){
                 return res.status(StatusCodes.FORBIDDEN).json('mot de passe incorrect')
                }
+               const mail = sendMail(email)
 
             return res.status(StatusCodes.OK).json(`Welcome ${userexists.data.firstName} ${userexists.data.lastName}`)
       } catch (error) {

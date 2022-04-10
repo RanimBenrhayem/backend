@@ -1,37 +1,51 @@
-var http = require('http');
-var nodemailer = require('nodemailer');
 const userModel = require('../models/user.model')
+const nodemailer = require ('nodemailer')
 
- 
- function mailServices(email){
- try {
-   
- 
-  
-  var fromEmail = 'ltconlineschool@gmail.com';
-  var toEmail = email;
 
-  var transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 465,
+    function mailService (email , firstName) {
+    transporter = nodemailer.createTransport({
+    service: 'outlook', 
+    auth: {
     
-      auth: {
-        user: 'ltconlineschool@gmail.com',
-        pass: 'fastandfurious'
-      }
-  });
-   transporter.sendMail({
-      from: fromEmail,
-      to: toEmail,
-      subject: 'Regarding forget password request',
-      text: 'This is forget password response from your app',
-      html: '<p>Your password is <b>sample</b></p>'
-  },
-);
-} catch (error) {
-   
-}
+    user: 'lamianouri55@outlook.com',
+    pass : 'ranim123',
+
+}})
+
+    
+
+    
+
+  
+   var mailOptions = {
+    from: "lamianouri55@outlook.com", // sender address (who sends)
+    to: email, // list of receivers (who receives)
+    subject: 'Subscription Confirmed.. ', // Subject line
+    
+    html: `Good morning </br>
+    Your subscription to our list has been confirmed..
+   </br>
+   have a nice day!
+   </br>
+   </br>
+   </br>
+   </br>
+   E-mail : info@branper.com
+   </br>
+   PhoneNumber: +216 56 219 219
+   </br>
+   Site web:  www.branper.com
+   </br>
+   Location : Novation city, H. Maarouf, Riadh ` // html body
 }
 
+// send mail with defined transport object
+transporter.sendMail(mailOptions, function(error, info){
+    if(error){
+        return console.log(error);
+    }
 
-module.exports = mailServices
+    console.log('Message sent: ' + info.response);
+})
+    }
+module.exports = mailService 
