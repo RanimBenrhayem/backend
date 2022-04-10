@@ -15,7 +15,7 @@ mongoose
   )
   .then(
     () => {
-      console.log("Database connected");
+      console.log("Database connected!!");
     },
     (err) => {
       console.log("error");
