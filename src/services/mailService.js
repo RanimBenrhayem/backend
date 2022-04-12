@@ -7,8 +7,8 @@ const nodemailer = require ('nodemailer')
     service: 'outlook', 
     auth: {
     
-    user: 'lamianouri55@outlook.com',
-    pass : 'ranim123',
+    user: process.env.user_email,
+    pass : process.env.user_password,
 
 }})
 
@@ -18,7 +18,7 @@ const nodemailer = require ('nodemailer')
 
   
    var mailOptions = {
-    from: "lamianouri55@outlook.com", // sender address (who sends)
+    from:process.env.user_email , // sender address (who sends)
     to: email, // list of receivers (who receives)
     subject: 'Subscription Confirmed.. ', // Subject line
     

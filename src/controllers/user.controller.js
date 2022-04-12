@@ -3,14 +3,19 @@ const userModel = require('../models/user.model')
 const userDao = require ('../dao/user.dao'); 
 const passwordService = require("../services/passwordService");
 const sendMail = require ('../services/mailService')
-
+const validate = require ('../services/verification')
 
 class UserController {
     //fonction asynchrone signup
     async signup (req,res){
         try {
-            const {firstName,lastName,phoneNumber,email,password} = req.body; //retreiving attributes from request's body
-           // console.log(req)
+            const {firstName,lastName,phoneNumber,email,password} = req.body;//retreiving attributes from request's body
+            const validationResult =  await validate({firstName,lastName,phoneNumber,email,password})
+            if (validationResult.success===false){
+                return res.status(StatusCodes.BAD_REQUEST).json(validationResult.msg)
+            }
+           
+            // console.log(req)
              const exist =   await userDao.findUserByEmail(email) //exist contient le resultat de la fonction finduserbyemail
              const phoneNumberexists =   await userDao.findUserByPhoneNumber(phoneNumber) //phoneNumberexists contient le resultat de la fonction finduserbyphonenumber
              //condition sur email et phonenumber
@@ -81,6 +86,26 @@ class UserController {
           return  res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("error during the sign in, please try again later")
           
       }
+    }
+
+    async getAllFilesForOneUser(req,res) {
+        try{
+            const userId = req.params.userId;
+            const userExists = await userDao.findUserById(userId);
+            if(userExists.success===false){
+                return res.status(StatusCodes.INTERNAL_SERVER_ERROR).status("error")
+            }
+            if(!userExists.data) {
+                return res.status(StatusCodes.NOT_FOUND).status("no user found with this id")
+            }
+
+            return res.status(StatusCodes.OK).json(userExists.data.uploadedFiles)
+
+
+        }catch(error){
+                console.log(error)
+                return res.status(StatusCodes.INTERNAL_SERVER_ERROR).status("error")
+        }
     }
 }
 module.exports = new UserController()

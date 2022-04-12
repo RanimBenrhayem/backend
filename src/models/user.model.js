@@ -5,7 +5,9 @@ const schema = new mongoose.Schema({
     password : String,
     firstName :String,
     lastName:String,
-    phoneNumber : String
+    phoneNumber : String,
+    uploadedFiles : Array
+
 
     
 })
