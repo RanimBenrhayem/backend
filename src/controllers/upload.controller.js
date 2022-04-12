@@ -1,5 +1,6 @@
 const { StatusCodes } = require("http-status-codes");
 const userDao = require("../dao/user.dao");
+const mongoose = require('mongoose');
 
 
 
@@ -39,7 +40,20 @@ async getFileByFileName(req,res){
     });
 }
 
-}
+async deleteFileFromDB (req, res) {
+  const gfs = req.app.locals.gfs;
+  gfs.delete(new mongoose.Types.ObjectId(req.params.id), (err, data) => {
+    if (err) return res.status(404).json({ err: err.message });
 
+    
+      return res.status(StatusCodes.OK).json("file deleted successfully!")
+    
+   
+  })};
+
+
+
+  
+}
 
 module.exports = new UploadController()
