@@ -87,7 +87,7 @@ class UserController {
           
       }
     }
-
+   //affichage de uploaded files (json format)
     async getAllFilesForOneUser(req,res) {
         try{
             const userId = req.params.userId;

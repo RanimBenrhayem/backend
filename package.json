@@ -12,6 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "@emailjs/browser": "^3.5.0",
+    "alasql": "^1.7.3",
     "bcrypt": "^5.0.1",
     "cors": "^2.8.5",
     "dotenv": "^16.0.0",

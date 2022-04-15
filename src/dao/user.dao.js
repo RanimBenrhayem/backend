@@ -1,7 +1,7 @@
 const userModel = require('../models/user.model') //importation du usermodel
 
 class userDao {
-
+//recherche user par id
     async findUserById(id) {
         try{
 const result = await userModel.findById(id).exec()
@@ -54,7 +54,7 @@ return ({
         
     }
 }
-
+//added file into user table
 async addFileIntoTable(userId,fileName){
 
     try {
@@ -69,8 +69,26 @@ async addFileIntoTable(userId,fileName){
         console.log(error)
         return {success:false}
     }
-
-    
+}
+//delete file from user table
+    async deleteAndUpdate(idUser,fileName) {
+       try {
+           const user = await userModel.findById(idUser);
+           if(user){
+               const uploadedFiles = user.uploadedFiles;
+               const newFilesArray = uploadedFiles.filter((element)=>element.fileName!==fileName)
+               user.uploadedFiles = newFilesArray ;
+               await user.save()
+                return {success : true , msg : "file deleted from user"}
+           }
+           return {success:false , msg :"user not found"}
+           
+       } catch (error) {    
+           console.log(error)
+           return {success:false , msg:error.toString()}
+           
+       }
+    }    
 
 
 
@@ -91,7 +109,9 @@ async addFileIntoTable(userId,fileName){
 
 
 
-}
+
+
+
 
 
 

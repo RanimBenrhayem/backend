@@ -8,7 +8,7 @@ const { appendFile } = require("fs");
 const mongoURI = process.env.database_uri;
 
 // Storage
-const storage = new GridFsStorage({
+const storage = new GridFsStorage( {
     url: mongoURI,
     file: (req, file) => {
       return new Promise((resolve, reject) => {
