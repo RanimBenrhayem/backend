@@ -14,6 +14,7 @@ async uploadProcess(req,res) {
         const originaleFileName = req.info.originaleFileName;
         const userId = req.params.userId;
         const {success} = await userDao.addFileIntoTable(userId , {fileName,originaleFileName})
+        
         if(success) {
             return res.status(StatusCodes.OK).json("file uploaded successfully")
         }
