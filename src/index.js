@@ -37,13 +37,18 @@ const conn = mongoose.createConnection(mongoURI, {
   });
 
   // init gfs
-let gfs;
+let gfs ;
+let gfsJoin;
 conn.once("open", () => {
   // init stream
   gfs = new mongoose.mongo.GridFSBucket(conn.db, {
     bucketName: "uploads"
   });
+  gfsJoin = new mongoose.mongo.GridFSBucket(conn.db, {
+    bucketName: "join"
+  });
   app.locals.gfs=gfs;
+  app.locals.gfsJoin = gfsJoin;
 });
 
 //Demarrage serveur

@@ -8,7 +8,7 @@ const mongoURI = process.env.database_uri;
 
 
 // Storage
-const storage = new GridFsStorage({
+const joinStorage = new GridFsStorage({
   url: mongoURI,
 
   file: (req, file) => {
@@ -22,17 +22,24 @@ const storage = new GridFsStorage({
         // console.log("id*****************",req.body.idFile1)
         const userId = req.params.userId;
 
-        
+        const {idFile1,
+            idFile2,
+            attribut1,
+            attribut2}= req.body
         req.info = { fileName: filename, originaleFileName: file.originalname };
 
         const fileInfo ={
-          filename: filename,
-           metadata:{
-             originalFileName : file.originalname,
-             userId 
+            filename:filename,
+            metadata : {
+              userId,
+              originalFileName: file.originalname,
+              idFile1,
+              idFile2,
+              attribut1,
+              attribut2
             },
-          bucketName : "uploads",
-        };
+            bucketName : "join",
+          }
         // const fileInfo = {
         //   filename: filename,
         //    metadata,
@@ -45,7 +52,7 @@ const storage = new GridFsStorage({
 });
 
 const upload = multer({
-  storage,
+ storage: joinStorage,
 });
 
 module.exports = upload;

@@ -1,10 +1,12 @@
 const alasql = require("alasql");
-const joinFilesModel = require("../models/joinFiles.model");
 const path = require("path");
 const crypto = require("crypto");
 
 async function joinFiles(file1Name, file2Name, attribut1, attribut2) {
   try {
+    console.log(attribut1,attribut2,)
+    console.log(file1Name)
+    console.log(file2Name)
     const crypted = await crypto.randomBytes(16).toString("hex");
     const result = await alasql.promise(
       `SELECT * FROM CSV('${file1Name}' ) AS File1 , CSV('${file2Name}') AS File2 WHERE File1.${attribut1} = File2.${attribut2} `

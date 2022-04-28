@@ -1,7 +1,9 @@
 const joinedFilesModel = require('../models/joinFiles.model')
 const fileDao = require('../dao/file.dao')
 const { StatusCodes } = require("http-status-codes");
-const join = require ('../services/join')
+const join = require ('../services/join');
+const { default: mongoose } = require('mongoose');
+const path = require("path")
 
 
 class JoinedFilesContollers {
@@ -13,6 +15,8 @@ class JoinedFilesContollers {
             let bufs = [];
             let result;
             let result2;
+            let file1;
+            let file2;
     //         const file1exists = await fileDao.findFileByFileName(gfs,fileName1)
     //         return res.json(file1exists)
 
@@ -27,20 +31,16 @@ class JoinedFilesContollers {
      
     const file = gfs
     .find({
-      filename: fileName1,
+      _id:  mongoose.Types.ObjectId(fileName1),
     })
     .toArray( (err, files) => {
       if (!files || files.length === 0) {
-        return res.status(StatusCodes.NOT_FOUND).json(` File with this name : ${fileName1} not found`)
-
-        
+        return res.status(StatusCodes.NOT_FOUND).json(` File with this name : ${fileName1} not found`) 
       }
-
-    
-    
+      file1= files[0].metadata.originalFileName
 
       gfs
-        .openDownloadStreamByName(fileName1)
+        .openDownloadStream( mongoose.Types.ObjectId(fileName1))
         .on("data", (chunk) => {
           bufs.push(chunk);
         })
@@ -49,21 +49,30 @@ class JoinedFilesContollers {
           result = fbuf.toString();
           bufs = []
           const find = gfs.find({
-            filename: fileName2,
+            _id:  mongoose.Types.ObjectId(fileName2)
           }).toArray((err,files)=>{
             if (!files || files.length === 0) {
                 return res.status(StatusCodes.NOT_FOUND).json(` File with this name : ${fileName2} not found`)
         
             }
+            file2= files[0].metadata.originalFileName
 
-            gfs.openDownloadStreamByName(fileName2).on("data" , chunk =>bufs.push(chunk))
+            gfs.openDownloadStream( mongoose.Types.ObjectId(fileName2)).on("data" , chunk =>bufs.push(chunk))
             .on("end" , async()=>{
                 const fbuf2= Buffer.concat(bufs)
                 result2= fbuf2.toString()
                 // return res.json({result,result2})
                 const joinedFile = await join(result,result2,attribut1,attribut2)
-                return res.json(joinedFile)
-
+               // return res.attachment(path.join(__dirname)).sendFile(path.join(__dirname))
+                  if (joinedFile.success===false){
+                    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json('join failed !')
+                  }
+                  console.log(joinedFile.data)
+                 return res.attachment(joinedFile.data.joinedFileName).json({
+                   joinedResult : joinedFile.data.joinedResult,
+                   originalFileName : `${file1}_${file2}_with_${attribut1}_${attribut2}.csv`
+                 })
+                return res.sendFile(path.join(__dirname,"..","..",joinedFile.data.joinedFileName))
             })
           })
 
@@ -95,26 +104,90 @@ class JoinedFilesContollers {
     }
     async saveJoinedFilesIntoDataBase(){
 
-
-       
+      
+      
         const joined = await join(file1Name, file2Name, attribut1, attribut2)
         const joinedModel = new joinedFilesModel({fileName1,fileName2,attribut1,attribut2 ,fileName:success.data.joinedFileName})
         await joinedModel.save()
+       
         return   res.status(StatusCodes.CREATED).json("Joined File uploaded successfully")
     } catch (error) {
         console.log(error)
        return  res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("error during the join .. please try again")
         
     }
+
+
+
+    async deleteJoinedFileFromDB(req, res) {
+      const gfsjoin = req.app.locals.gfsJoin;
+      const  userId  = req.params.userId;
+      console.log(userId)
+      //const result = await userDao.deleteAndUpdate(idUser, req.params.id);
+      // if (result.success === false) {
+      //   return res.status(StatusCodes.BAD_REQUEST).json(result.msg);
+      // }
+      const file = gfsjoin
+        .find({
+          _id: mongoose.Types.ObjectId(req.params.id),
+        })
+        .toArray((err, files) => {
+          // console.log("aaaaaaaaaaaa")
+          if (!files || files.length === 0) {
+            return res.status(404).json({
+              err: "no files exist",
+            });
+          }
+          console.log(files[0]._id);
+          gfsjoin.delete(files[0]._id, (err, data) => {
+            if (err) return res.status(404).json({ err: err.message });
+  
+            return res.status(StatusCodes.OK).json("file deleted successfully!");
+          });
+        });
+    }
+  getJoinedFilesById(req,res){
+  const gfs = req.app.locals.gfsJoin;
+    let fileInfo;
+    const file = gfs
+      .find({
+       _id: mongoose.Types.ObjectId(req.params.id),
+      })
+     return file.forEach(doc => res.json(doc));
+
+
+
+
     }
 
-
+    getUserJoinedFiles(req,res){
+      const gfs = req.app.locals.gfsJoin;
+    
+     const userId = req.params.userId
+     const file = gfs.find({
+       "metadata.userId" :  userId }).toArray((err,files)=>res.status(StatusCodes.OK).json(files))}
       
 
+       downloadJoinedFileById(req,res){
+
+        const gfs = req.app.locals.gfsJoin;
+        const file = gfs
+          .find({
+           _id: mongoose.Types.ObjectId(req.params.id)
+          })
+          .toArray((err, files) => {
+            if (!files || files.length === 0) {
+              return res.status(404).json({
+                err: "no files exist",
+              });
+            }
+    
+            gfs.openDownloadStream(mongoose.Types.ObjectId(req.params.id)).pipe(res);
+          });
+      }
 
 
-
-
+  }
 
 
 

@@ -71,12 +71,12 @@ async addFileIntoTable(userId,fileName){
     }
 }
 //delete file from user table
-    async deleteAndUpdate(idUser,fileName) {
+    async deleteAndUpdate(idUser,id) {
        try {
            const user = await userModel.findById(idUser);
            if(user){
                const uploadedFiles = user.uploadedFiles;
-               const newFilesArray = uploadedFiles.filter((element)=>element.fileName!==fileName)
+               const newFilesArray = uploadedFiles.filter((element)=>element!==id)
                user.uploadedFiles = newFilesArray ;
                await user.save()
                 return {success : true , msg : "file deleted from user"}
