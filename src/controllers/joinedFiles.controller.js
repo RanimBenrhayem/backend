@@ -68,8 +68,19 @@ class JoinedFilesContollers {
                     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json('join failed !')
                   }
                   console.log(joinedFile.data)
+                  const deleteColumn = joinedFile.data.joinedResult.map((element)=>{
+                    
+                   const { [attribut1]:toDelete , ...others} = element ;
+                   console.log("aaaaaaaaaaa")
+                   console.log(attribut1.length)
+                   console.log(toDelete)
+                   console.log(others)
+                   console.log("aaaaaaaaaaaaaaa")
+                   return others
+                  })
+                  console.log(deleteColumn)
                  return res.attachment(joinedFile.data.joinedFileName).json({
-                   joinedResult : joinedFile.data.joinedResult,
+                   joinedResult : deleteColumn,
                    originalFileName : `${file1}_${file2}_with_${attribut1}_${attribut2}.csv`
                  })
                 return res.sendFile(path.join(__dirname,"..","..",joinedFile.data.joinedFileName))
