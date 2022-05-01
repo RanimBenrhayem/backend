@@ -107,5 +107,69 @@ class UserController {
                 return res.status(StatusCodes.INTERNAL_SERVER_ERROR).status("error")
         }
     }
+
+
+    async userslist(req, res, next) {
+        userModel.find((error, data) => {
+          if (error) {
+            return next(error);
+          } else {
+            res.json(data);
+          }
+        });
+      }
+      async deleteuser(req, res, next) {
+        userModel.findByIdAndRemove(req.params.id, (error, data) => {
+          if (error) {
+            return next(error);
+          } else {
+            res.status(200).json({
+              msg: data,
+            });
+          }
+        });
+      }
+      async updateuser(req, res, next) {
+        const {firstName,lastName,phoneNumber,email,password} = req.body;//retreiving attributes from request's body
+            const validationResult =  await validate({firstName,lastName,phoneNumber,email,password})
+            if (validationResult.success===false){
+                return res.status(StatusCodes.BAD_REQUEST).json(validationResult.msg)
+              }
+        userModel.findByIdAndUpdate(
+          req.params.id,
+          {
+            $set: req.body,
+          },
+          (error, data) => {
+            if (error) {
+              return next(error);
+            } else {
+              res.json(data);
+              console.log("User updated successfully !");
+            }
+          }
+        );
+      }
+
+      async getUsersById(req,res){
+     try {
+   const    userId = req.params.userId
+      const usersById = await userDao.findUserById(userId);
+      if (usersById.success===false){
+        return res.status(StatusCodes.BAD_REQUEST).json('can not get users')
+     
+      }
+           if(!usersById.data){
+             return res.status(StatusCodes.NOT_FOUND).json('user not found')           }
+
+             return res.status(StatusCodes.OK).json(usersById.data)
+
+     } catch (error) {
+      return res.status(StatusCodes.BAD_REQUEST).json('error..please try again')
+     }
+
+
+
+      }
 }
 module.exports = new UserController()
