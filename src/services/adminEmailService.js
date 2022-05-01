@@ -2,7 +2,7 @@ const userModel = require('../models/user.model')
 const nodemailer = require ('nodemailer')
 
 
-    function mailService (email) {
+    function  adminEmailServices (req,res) {
     transporter = nodemailer.createTransport({
     service: 'outlook', 
     auth: {
@@ -15,37 +15,33 @@ const nodemailer = require ('nodemailer')
     
 
     
+console.log(req.body)
 
+
+    const email = req.body.email
+    const message = req.body.message
+    const content = ` ${message} `
   
-   var mailOptions = {
-    from:process.env.user_email , // sender address (who sends)
-    to: email, // list of receivers (who receives)
-    subject: 'Subscription Confirmed.. ', // Subject line
-    
-    html: `Good morning </br>
-    Your subscription to our list has been confirmed..
-   </br>
-   have a nice day!
-   </br>
-   </br>
-   </br>
-   </br>
-   E-mail : info@branper.com
-   </br>
-   PhoneNumber: +216 56 219 219
-   </br>
-   Site web:  www.branper.com
-   </br>
-   Location : Novation city, H. Maarouf, Riadh ` // html body
-}
-
-// send mail with defined transport object
-transporter.sendMail(mailOptions, function(error, info){
-    if(error){
-        return console.log(error);
+    var mail = {
+      from: process.env.user_email , 
+      to: email, 
+      subject: '[Branper Admin]  ',
+      message: message,
+      text: content
+    }
+  
+    transporter.sendMail(mail, (err) => {
+      if (err) {
+          console.log(err)
+        res.json({
+          status: 'fail'
+        })
+      } else {
+        res.json({
+         status: 'success'
+      })
+    }})
     }
 
-    console.log('Message sent: ' + info.response);
-})
-    }
-module.exports = mailService 
+      
+module.exports = adminEmailServices 

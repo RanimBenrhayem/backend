@@ -2,6 +2,7 @@ const express = require("express"); //'express' c'est le package deja installé
 const cors = require('cors') //pour que le serveur accepte la requete qui vient du port 3000
 const mongoose = require("mongoose");
 const userRouter = require("./routers/user.router");
+const adminRouter = require('./routers/admin.router')
 require("dotenv").config()
 const uploadRouter = require("./routers/upload.router")
 
@@ -11,6 +12,7 @@ app.use(cors())
 app.use(express.json())
 app.use("/user", userRouter); 
 app.use("/uploads" , uploadRouter)
+app.use('/admin',adminRouter)
 
 const mongoURI = process.env.database_uri;
 

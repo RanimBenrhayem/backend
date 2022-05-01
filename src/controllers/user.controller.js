@@ -3,7 +3,8 @@ const userModel = require('../models/user.model')
 const userDao = require ('../dao/user.dao'); 
 const passwordService = require("../services/passwordService");
 const sendMail = require ('../services/mailService')
-const validate = require ('../services/verification')
+const validate = require ('../services/verification');
+const roleDao = require("../dao/role.dao");
 
 class UserController {
     //fonction asynchrone signup
@@ -42,9 +43,15 @@ class UserController {
                 return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json('error during account creation')
 
               }
-              
+              const role = await roleDao.getRoleByName('client')
+              if (role.success===false){
+                return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json('error ')
+              }
+              if (!role.data) {
+                return res.status(StatusCodes.NOT_FOUND).json('error')
+              }
              //enregistrement user dans la base 
-            const user = new userModel ({firstName,lastName,phoneNumber,email,password : passwordProcess.data})
+            const user = new userModel ({firstName,lastName,phoneNumber,email,password : passwordProcess.data,roleId:role.data._id})
             await user.save()
             const mail = sendMail(email)
 
@@ -110,13 +117,17 @@ class UserController {
 
 
     async userslist(req, res, next) {
-        userModel.find((error, data) => {
-          if (error) {
-            return next(error);
-          } else {
-            res.json(data);
-          }
-        });
+       try {
+         const users = await userModel.find().populate('roleId').exec()
+         if (!users){
+          return res.status(StatusCodes.NOT_FOUND).json("Users not Found")
+         }
+         return res.status(StatusCodes.OK).json(users)
+       } catch (error) {
+         console.log(error)
+         
+         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json('error')
+       }
       }
       async deleteuser(req, res, next) {
         userModel.findByIdAndRemove(req.params.id, (error, data) => {
@@ -171,5 +182,12 @@ class UserController {
 
 
       }
+
+ 
+
+
+
+
+
 }
 module.exports = new UserController()

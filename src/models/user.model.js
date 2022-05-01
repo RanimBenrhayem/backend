@@ -6,6 +6,7 @@ const schema = new mongoose.Schema({
     firstName :String,
     lastName:String,
     phoneNumber : String,
+    roleId : {type: mongoose.Schema.Types.ObjectId, ref: 'roles'},
   
  
 
