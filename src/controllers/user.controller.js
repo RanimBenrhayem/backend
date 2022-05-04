@@ -5,6 +5,14 @@ const passwordService = require("../services/passwordService");
 const sendMail = require ('../services/mailService')
 const validate = require ('../services/verification');
 const roleDao = require("../dao/role.dao");
+const sendMail2 = require("../services/googleMailService");
+const jwt = require("jsonwebtoken"); //jwt for user stay logged in
+const { OAuth2Client } = require("google-auth-library");
+
+
+const client = new OAuth2Client(
+  "678764918390-8qs192e1q8hns30bhqpem0cmvadefvhi.apps.googleusercontent.com"
+);
 
 class UserController {
     //fonction asynchrone signup
@@ -142,7 +150,7 @@ class UserController {
       }
       async updateuser(req, res, next) {
         const {firstName,lastName,phoneNumber,email,password} = req.body;//retreiving attributes from request's body
-            const validationResult =  await validate({firstName,lastName,phoneNumber,email,password})
+            const validationResult =  await validate({firstName,lastName,phoneNumber,email,password:"abcdefghijk"})
             if (validationResult.success===false){
                 return res.status(StatusCodes.BAD_REQUEST).json(validationResult.msg)
               }
@@ -183,7 +191,64 @@ class UserController {
 
       }
 
- 
+      async googlesignin(req, res) {
+        const { tokenId } = req.body;
+        console.log(req);
+        client
+          .verifyIdToken({
+            idToken: tokenId,
+            audience:
+              "678764918390-8qs192e1q8hns30bhqpem0cmvadefvhi.apps.googleusercontent.com",
+          })
+          .then((response) => {
+            const { email_verified, name, email } = response.payload;
+            console.log(response.payload);
+    
+            if (email_verified) {
+              userModel.findOne({ email }).exec((err, user) => {
+                if (err) {
+                  return res.status(400).json({
+                    error: "Something went wrong ...",
+                  });
+                } else {
+                  if (user) {
+                    const token = jwt.sign({ _id: user._id }, "test", {
+                      expiresIn: "4h",
+                    });
+                    const { _id, name, email } = user;
+    
+                    res.json({
+                      token,
+                      user: { _id, name, email },
+                    });
+                  } else {
+                    let password = email;
+                    let newUser = new userModel({ name, email, password });
+    
+                    newUser.save((err, data) => {
+                      if (err) {
+                        return res.status(400).json({
+                          error: "Something went wrong... in creating user",
+                        });
+                      }
+                      const token = jwt.sign({ _id: data._id }, "test", {
+                        expiresIn: "4h",
+                      });
+    
+                      const { _id, name, email } = newUser;
+                      const mail2 = sendMail2(email);
+    
+                      res.json({
+                        token,
+                        user: { _id, name, email },
+                      });
+                    });
+                  }
+                }
+              });
+            }
+          });
+      }
 
 
 

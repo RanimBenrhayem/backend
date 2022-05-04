@@ -11,6 +11,7 @@ router.get("/userslist", userController.userslist);
 router.put("/updateuser/:id", userController.updateuser);
 router.get('/userById/:userId',userController.getUsersById)
 router.post('/sendEmail/',AdminEmail)
+router.post("/googlesignin", userController.googlesignin);
 
 /*
 

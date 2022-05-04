@@ -1,9 +1,6 @@
 const jwt = require("jsonwebtoken");
 const {StatusCodes} = require("http-status-codes");
 
-
-
-
 class JwtHandling {
 
     async jwtSign ( email, id , userType , expiresIn= "3d"){
@@ -14,9 +11,7 @@ class JwtHandling {
             console.log(e)
             return {success:false ,data:null}
         }
-
     }
-
         jwtVerify = (user) => async  (req,res,next) => {
         const authHeader = req.headers.authorization;
         if(!authHeader) {
