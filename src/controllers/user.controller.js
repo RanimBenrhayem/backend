@@ -85,7 +85,7 @@ class UserController {
                if (!decryptedPaswword.data ){
                 return res.status(StatusCodes.FORBIDDEN).json('mot de passe incorrect')
                }
-               const mail = sendMail(email)
+               
 
             return res.status(StatusCodes.OK).json(`Welcome ${userexists.data.firstName} ${userexists.data.lastName}`)
       } catch (error) {
