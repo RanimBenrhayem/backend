@@ -20,10 +20,10 @@ const storage = new GridFsStorage({
         const filename = buf.toString("hex") + path.extname(file.originalname);
         //const bucketName = req.body.bucketName ;
         // console.log("id*****************",req.body.idFile1)
-        const userId = req.params.userId;
+        const userId = req.infos.authId;
 
         
-        req.info = { fileName: filename, originaleFileName: file.originalname };
+        //req.info = { fileName: filename, originaleFileName: file.originalname };
 
         const fileInfo ={
           filename: filename,

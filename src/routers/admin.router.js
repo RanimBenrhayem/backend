@@ -5,6 +5,7 @@ const adminGuard = require("../guards/admin.guard")
 const jwtHandling = require ("../services/jwt")
 
 router.post("/addAdmin",[jwtHandling.jwtVerify , adminGuard],adminContoller.addAdmin)
-router.get("/roles",adminContoller.getAllRoles)
+// router.post("/addAdmin",adminContoller.addAdmin)
+router.get("/roles",[jwtHandling.jwtVerify , adminGuard],adminContoller.getAllRoles)
 
 module.exports = router;

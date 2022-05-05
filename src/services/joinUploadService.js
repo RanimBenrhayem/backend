@@ -20,13 +20,13 @@ const joinStorage = new GridFsStorage({
         const filename = buf.toString("hex") + path.extname(file.originalname);
         //const bucketName = req.body.bucketName ;
         // console.log("id*****************",req.body.idFile1)
-        const userId = req.params.userId;
+        const userId = req.infos.authId;
 
         const {idFile1,
             idFile2,
             attribut1,
             attribut2}= req.body
-        req.info = { fileName: filename, originaleFileName: file.originalname };
+      //  req.info = { fileName: filename, originaleFileName: file.originalname };
 
         const fileInfo ={
             filename:filename,

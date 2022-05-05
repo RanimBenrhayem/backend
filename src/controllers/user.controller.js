@@ -99,7 +99,7 @@ class UserController {
                if(jwtProcess.success===false) {
                 return  res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("error during the sign in, please try again later")
               }
-           // return res.status(StatusCodes.OK).json(`Welcome ${userexists.data.firstName} ${userexists.data.lastName}`)
+          //  return res.status(StatusCodes.OK).json(`Welcome ${userexists.data.firstName} ${userexists.data.lastName}`)
            return res.json(jwtProcess.data)
       } catch (error) {
           console.log(error)
@@ -110,13 +110,14 @@ class UserController {
    //affichage de uploaded files (json format)
     async getAllFilesForOneUser(req,res) {
         try{
-            const userId = req.params.userId;
+            const userId =  req.infos.role == "admin" ?  req.params.userId : req.infos.authId;
+            console.log("**************" , userId)
             const userExists = await userDao.findUserById(userId);
             if(userExists.success===false){
-                return res.status(StatusCodes.INTERNAL_SERVER_ERROR).status("error")
+                return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("error")
             }
             if(!userExists.data) {
-                return res.status(StatusCodes.NOT_FOUND).status("no user found with this id")
+                return res.status(StatusCodes.NOT_FOUND).json("no user found with this id")
             }
 
             return res.status(StatusCodes.OK).json(userExists.data.uploadedFiles)
@@ -124,7 +125,7 @@ class UserController {
 
         }catch(error){
                 console.log(error)
-                return res.status(StatusCodes.INTERNAL_SERVER_ERROR).status("error")
+                return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("error")
         }
     }
 
@@ -143,7 +144,8 @@ class UserController {
        }
       }
       async deleteuser(req, res, next) {
-        userModel.findByIdAndRemove(req.params.id, (error, data) => {
+        const userId =  req.infos.role == "admin" ?  req.params.id : req.infos.authId;
+                userModel.findByIdAndRemove(userId, (error, data) => {
           if (error) {
             return next(error);
           } else {
@@ -155,12 +157,13 @@ class UserController {
       }
       async updateuser(req, res, next) {
         const {firstName,lastName,phoneNumber,email} = req.body;//retreiving attributes from request's body
-            const validationResultWithoutPassword =  await validateWitoutPassword({firstName,lastName,phoneNumber,email})
+        const userId =  req.infos.role == "admin" ?  req.params.id : req.infos.authId;
+           const validationResultWithoutPassword =  await validateWitoutPassword({firstName,lastName,phoneNumber,email})
             if (validationResultWithoutPassword.success===false){
                 return res.status(StatusCodes.BAD_REQUEST).json(validationResultWithoutPassword.msg)
               }
         userModel.findByIdAndUpdate(
-          req.params.id,
+          userId,
           {
             $set: req.body,
           },

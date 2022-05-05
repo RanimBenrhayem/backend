@@ -3,14 +3,17 @@ const { getUsersById } = require("../controllers/user.controller");
 const AdminEmail = require("../services/adminEmailService")
 const router = express.Router();
 const userController = require("../controllers/user.controller");
+const adminGuard = require("../guards/admin.guard")
+const jwtHandling = require ("../services/jwt")
+const userGuard = require("../guards/user.guard")
 router.post("/signup", userController.signup);
 router.post("/signin", userController.signin);
-router.get("/files/:userId" , userController.getAllFilesForOneUser)
-router.delete("/deleteuser/:id", userController.deleteuser);
-router.get("/userslist", userController.userslist);
-router.put("/updateuser/:id", userController.updateuser);
+//router.get("/files/:userId?" , [jwtHandling.jwtVerify , userGuard], userController.getAllFilesForOneUser)
+router.delete("/deleteuser/:id",[jwtHandling.jwtVerify , userGuard], userController.deleteuser);
+router.get("/userslist",  [jwtHandling.jwtVerify , adminGuard],userController.userslist);
+router.put("/updateuser/:id?",[jwtHandling.jwtVerify , userGuard], userController.updateuser);
 router.get('/userById/:userId',userController.getUsersById)
-router.post('/sendEmail/',AdminEmail)
+router.post('/sendEmail/',[jwtHandling.jwtVerify , adminGuard] ,AdminEmail)
 router.post("/googlesignin", userController.googlesignin);
 
 /*

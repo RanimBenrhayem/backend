@@ -3,12 +3,13 @@ const userModel = require("../models/user.model");
 const mongoose = require("mongoose");
 const commentsModel = require("../models/comments.model");
 const { StatusCodes } = require("http-status-codes");
+const { json } = require("express");
 
 class commentsController {
   async addComment(req, res) {
     try {
       const { topic, content } = req.body;
-      const userId = req.params.userId;
+      const userId = req.infos.authId;
 
       const comment = new commentsModel({
         topic,
@@ -30,15 +31,21 @@ class commentsController {
     return res.status(StatusCodes.OK).json(result)
   }
   async deletecomment(req, res, next) {
-    commentsModel.findByIdAndRemove(req.params.id, (error, data) => {
-      if (error) {
-        return next(error);
-      } else {
-        res.status(200).json({
-          msg: data,
-        });
+    try {
+      const result = await commentsModel.findById(req.params.id).populate("userId").exec();
+      if(!result) {
+        return res.status(StatusCodes.NOT_FOUND).json("comment not found")
       }
-    });
+      if(result.userId._id.toString() !== req.infos.authId) {
+        return res.status(StatusCodes.FORBIDDEN).json("cannot delete this comment")
+      }
+     const deleteResult= await commentsModel.findByIdAndRemove(req.params.id).exec();
+return res.status(StatusCodes.OK).json({msg:deleteResult})
+    }catch(e) {
+console.log(e)
+return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(e.toString())
+    }
+    
   }
   async updatecomment(req, res, next) {
     commentsModel.findByIdAndUpdate(

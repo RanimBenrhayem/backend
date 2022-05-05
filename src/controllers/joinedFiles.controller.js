@@ -10,13 +10,14 @@ class JoinedFilesContollers {
  
     async joinProcess(req,res){
         try {
-            const {fileName1,fileName2,attribut1,attribut2,idUser} = req.body  
+            const {fileName1,fileName2,attribut1,attribut2} = req.body  
             const gfs = req.app.locals.gfs;
             let bufs = [];
             let result;
             let result2;
             let file1;
             let file2;
+            const userId = req.infos.authId;
     //         const file1exists = await fileDao.findFileByFileName(gfs,fileName1)
     //         return res.json(file1exists)
 
@@ -32,6 +33,7 @@ class JoinedFilesContollers {
     const file = gfs
     .find({
       _id:  mongoose.Types.ObjectId(fileName1),
+      "metadata.userId" :  userId
     })
     .toArray( (err, files) => {
       if (!files || files.length === 0) {
@@ -49,7 +51,8 @@ class JoinedFilesContollers {
           result = fbuf.toString();
           bufs = []
           const find = gfs.find({
-            _id:  mongoose.Types.ObjectId(fileName2)
+            _id:  mongoose.Types.ObjectId(fileName2),
+            "metadata.userId": userId
           }).toArray((err,files)=>{
             if (!files || files.length === 0) {
                 return res.status(StatusCodes.NOT_FOUND).json(` File with this name : ${fileName2} not found`)
@@ -132,13 +135,14 @@ class JoinedFilesContollers {
 
     async deleteJoinedFileFromDB(req, res) {
       const gfsjoin = req.app.locals.gfsJoin;
-      const  userId  = req.params.userId;
-      console.log(userId)
+     // const  userId  = req.params.userId;
+      //console.log(userId)
       //const result = await userDao.deleteAndUpdate(idUser, req.params.id);
       // if (result.success === false) {
       //   return res.status(StatusCodes.BAD_REQUEST).json(result.msg);
       // }
-      const file = gfsjoin
+      if(req.infos.role == "admin") {
+        const file = gfsjoin
         .find({
           _id: mongoose.Types.ObjectId(req.params.id),
         })
@@ -156,15 +160,47 @@ class JoinedFilesContollers {
             return res.status(StatusCodes.OK).json("file deleted successfully!");
           });
         });
+      } else {
+        const file = gfsjoin
+        .find({
+          _id: mongoose.Types.ObjectId(req.params.id),
+          "metadata.userId" : req.infos.authId
+        })
+        .toArray((err, files) => {
+          // console.log("aaaaaaaaaaaa")
+          if (!files || files.length === 0) {
+            return res.status(404).json({
+              err: "no files exist",
+            });
+          }
+          console.log(files[0]._id);
+          gfsjoin.delete(files[0]._id, (err, data) => {
+            if (err) return res.status(404).json({ err: err.message });
+  
+            return res.status(StatusCodes.OK).json("file deleted successfully!");
+          });
+        });
+      }
+     
     }
   getJoinedFilesById(req,res){
   const gfs = req.app.locals.gfsJoin;
     let fileInfo;
-    const file = gfs
+    if(req.infos.role == "admin") {
+      const file = gfs
       .find({
        _id: mongoose.Types.ObjectId(req.params.id),
       })
      return file.forEach(doc => res.json(doc));
+    } else {
+      const file = gfs
+      .find({
+       _id: mongoose.Types.ObjectId(req.params.id),
+       "metadata.userId" : req.infos.authId
+      })
+     return file.forEach(doc => res.json(doc));
+    }
+    
 
 
 
@@ -174,7 +210,7 @@ class JoinedFilesContollers {
     getUserJoinedFiles(req,res){
       const gfs = req.app.locals.gfsJoin;
     
-     const userId = req.params.userId
+     const userId =  req.infos.role == "admin" ?req.params.userId : req.infos.authId
      const file = gfs.find({
        "metadata.userId" :  userId }).toArray((err,files)=>res.status(StatusCodes.OK).json(files))}
       
@@ -182,7 +218,8 @@ class JoinedFilesContollers {
        downloadJoinedFileById(req,res){
 
         const gfs = req.app.locals.gfsJoin;
-        const file = gfs
+        if(req.infos.role == "admin") {
+          const file = gfs
           .find({
            _id: mongoose.Types.ObjectId(req.params.id)
           })
@@ -195,6 +232,23 @@ class JoinedFilesContollers {
     
             gfs.openDownloadStream(mongoose.Types.ObjectId(req.params.id)).pipe(res);
           });
+        }else {
+          const file = gfs
+          .find({
+           _id: mongoose.Types.ObjectId(req.params.id),
+           "metadata.userId" : req.infos.authId
+          })
+          .toArray((err, files) => {
+            if (!files || files.length === 0) {
+              return res.status(404).json({
+                err: "no files exist",
+              });
+            }
+    
+            gfs.openDownloadStream(mongoose.Types.ObjectId(req.params.id)).pipe(res);
+          });
+        }
+        
       }
 
 
