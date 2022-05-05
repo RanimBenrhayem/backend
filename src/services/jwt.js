@@ -12,7 +12,8 @@ class JwtHandling {
             return {success:false ,data:null}
         }
     }
-        jwtVerify = (user) => async  (req,res,next) => {
+        jwtVerify =  async  (req,res,next) => {
+            
         const authHeader = req.headers.authorization;
         if(!authHeader) {
             return res.status(StatusCodes.BAD_REQUEST).json("undefined Bearer Authorization Header")
@@ -20,12 +21,9 @@ class JwtHandling {
         const token = authHeader.split(' ')[1];
 
         if(token) {
+            console.log(token)
             try {
                 const {email,id,userType} = await jwt.verify(token , process.env.JWT_SECRET) ;
-
-                if(!(user.find((e)=>userType===e))) {
-                    return res.status(StatusCodes.UNAUTHORIZED).json('unauthorized action')
-                }
                 req.infos= {"authEmail":email,"authId":id , "authRole":userType} ;
                 return next();
             }catch (err) {

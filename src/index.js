@@ -7,6 +7,7 @@ require("dotenv").config()
 const uploadRouter = require("./routers/upload.router")
 const commentsRouter = require("./routers/comments.router");
 
+
 const app = express(); //instance d'express nommé app
 
 app.use(cors())

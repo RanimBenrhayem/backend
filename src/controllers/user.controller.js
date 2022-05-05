@@ -4,10 +4,12 @@ const userDao = require ('../dao/user.dao');
 const passwordService = require("../services/passwordService");
 const sendMail = require ('../services/mailService')
 const validate = require ('../services/verification');
+const validateWitoutPassword = require('../services/verificationWithoutPassword')
 const roleDao = require("../dao/role.dao");
 const sendMail2 = require("../services/googleMailService");
 const jwt = require("jsonwebtoken"); //jwt for user stay logged in
 const { OAuth2Client } = require("google-auth-library");
+const jwtHandling = require("../services/jwt")
 
 
 const client = new OAuth2Client(
@@ -93,9 +95,12 @@ class UserController {
                if (!decryptedPaswword.data ){
                 return res.status(StatusCodes.FORBIDDEN).json('mot de passe incorrect')
                }
-               
-
-            return res.status(StatusCodes.OK).json(`Welcome ${userexists.data.firstName} ${userexists.data.lastName}`)
+               const jwtProcess = await jwtHandling.jwtSign(userexists.data.email,userexists.data._id,userexists.data.roleId)
+               if(jwtProcess.success===false) {
+                return  res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("error during the sign in, please try again later")
+              }
+           // return res.status(StatusCodes.OK).json(`Welcome ${userexists.data.firstName} ${userexists.data.lastName}`)
+           return res.json(jwtProcess.data)
       } catch (error) {
           console.log(error)
           return  res.status(StatusCodes.INTERNAL_SERVER_ERROR).json("error during the sign in, please try again later")
@@ -149,10 +154,10 @@ class UserController {
         });
       }
       async updateuser(req, res, next) {
-        const {firstName,lastName,phoneNumber,email,password} = req.body;//retreiving attributes from request's body
-            const validationResult =  await validate({firstName,lastName,phoneNumber,email,password:"abcdefghijk"})
-            if (validationResult.success===false){
-                return res.status(StatusCodes.BAD_REQUEST).json(validationResult.msg)
+        const {firstName,lastName,phoneNumber,email} = req.body;//retreiving attributes from request's body
+            const validationResultWithoutPassword =  await validateWitoutPassword({firstName,lastName,phoneNumber,email})
+            if (validationResultWithoutPassword.success===false){
+                return res.status(StatusCodes.BAD_REQUEST).json(validationResultWithoutPassword.msg)
               }
         userModel.findByIdAndUpdate(
           req.params.id,
@@ -161,10 +166,13 @@ class UserController {
           },
           (error, data) => {
             if (error) {
-              return next(error);
+              console.log(error)
+              if(error.codeName==="DuplicateKey") {
+                return res.status(StatusCodes.BAD_REQUEST).json("email or phone number already in use");
+              }
+              return res.status(StatusCodes.BAD_REQUEST).json("please try again");
             } else {
-              res.json(data);
-              console.log("User updated successfully !");
+             return res.status(StatusCodes.OK).json(data);
             }
           }
         );
