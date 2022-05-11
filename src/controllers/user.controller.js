@@ -183,7 +183,7 @@ class UserController {
 
       async getUsersById(req,res){
      try {
-   const    userId = req.params.userId
+      const userId =  req.infos.role == "admin" ?  req.params.userId : req.infos.authId;
       const usersById = await userDao.findUserById(userId);
       if (usersById.success===false){
         return res.status(StatusCodes.BAD_REQUEST).json('can not get users')
@@ -202,6 +202,32 @@ class UserController {
 
       }
 
+      async getProfilInfo(req,res){
+        try {
+         const userId  =  req.infos.authId;;
+         const usersById = await userDao.findUserById(userId);
+         if (usersById.success===false){
+           return res.status(StatusCodes.BAD_REQUEST).json('can not get users')
+        
+         }
+              if(!usersById.data){
+                return res.status(StatusCodes.NOT_FOUND).json('user not found')           }
+   
+                return res.status(StatusCodes.OK).json(usersById.data)
+   
+        } catch (error) {
+         return res.status(StatusCodes.BAD_REQUEST).json('error..please try again')
+        }
+   
+   
+   
+         }
+
+
+
+
+
+     
       async googlesignin(req, res) {
         const { tokenId } = req.body;
         console.log(req);

@@ -33,7 +33,7 @@ class JoinedFilesContollers {
     const file = gfs
     .find({
       _id:  mongoose.Types.ObjectId(fileName1),
-      "metadata.userId" :  userId
+      // "metadata.userId" :  userId
     })
     .toArray( (err, files) => {
       if (!files || files.length === 0) {

@@ -8,13 +8,20 @@ const jwtHandling = require ("../services/jwt")
 const userGuard = require("../guards/user.guard")
 router.post("/signup", userController.signup);
 router.post("/signin", userController.signin);
-//router.get("/files/:userId?" , [jwtHandling.jwtVerify , userGuard], userController.getAllFilesForOneUser)
+
+
+
+
+
+router.get("/files/:userId?" , [jwtHandling.jwtVerify , userGuard], userController.getAllFilesForOneUser)
 router.delete("/deleteuser/:id",[jwtHandling.jwtVerify , userGuard], userController.deleteuser);
 router.get("/userslist",  [jwtHandling.jwtVerify , adminGuard],userController.userslist);
 router.put("/updateuser/:id?",[jwtHandling.jwtVerify , userGuard], userController.updateuser);
-router.get('/userById/:userId',userController.getUsersById)
+router.get('/userById/:userId?',[jwtHandling.jwtVerify , userGuard],userController.getUsersById)
 router.post('/sendEmail/',[jwtHandling.jwtVerify , adminGuard] ,AdminEmail)
 router.post("/googlesignin", userController.googlesignin);
+router.get('/profilInfo/:userId?',[jwtHandling.jwtVerify , userGuard],userController.getProfilInfo)
+
 
 /*
 
