@@ -12,7 +12,7 @@ const router = express.Router();
 
 
 router.post("" ,[ jwtHandling.jwtVerify,userGuard, upload.single("file") ], uploadController.uploadProcess)//upload files
-router.post("/join/add/:userId",[ jwtHandling.jwtVerify,userGuard,uploadjoin.single('file')],uploadController.uploadProcess)
+router.post("/join/add/:userId?",[ jwtHandling.jwtVerify,userGuard,uploadjoin.single('file')],uploadController.uploadProcess)
 router.get("/:filename",  [jwtHandling.jwtVerify , userGuard], uploadController.getFileByFileName) //file table
 router.delete("/files/delete/:id/:userId?",[jwtHandling.jwtVerify , userGuard],uploadController.deleteFileFromDB) //delete
 router.post("/join/files",[jwtHandling.jwtVerify , userGuard],joinedFilesController.joinProcess)
